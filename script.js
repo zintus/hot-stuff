@@ -10,7 +10,8 @@
         heatmap = new google.maps.visualization.HeatmapLayer({
           data: getPoints(),
           map: map,
-          maxIntensity: 10
+          maxIntensity: 10,
+          radius: 20
         });
       }
 
@@ -20,20 +21,12 @@
 
       function changeGradient() {
         var gradient = [
-          'rgba(0, 255, 255, 0)',
-          'rgba(0, 255, 255, 1)',
-          'rgba(0, 191, 255, 1)',
-          'rgba(0, 127, 255, 1)',
-          'rgba(0, 63, 255, 1)',
-          'rgba(0, 0, 255, 1)',
-          'rgba(0, 0, 223, 1)',
-          'rgba(0, 0, 191, 1)',
-          'rgba(0, 0, 159, 1)',
-          'rgba(0, 0, 127, 1)',
-          'rgba(63, 0, 91, 1)',
-          'rgba(127, 0, 63, 1)',
-          'rgba(191, 0, 31, 1)',
-          'rgba(255, 0, 0, 1)'
+          'rgba(255, 150, 0, 0)',
+          'rgba(255, 150, 0, 0.8)',
+          'rgba(255, 150, 0, 0.9)',
+          'rgba(255, 150, 0, 1)',
+          'rgba(115, 208, 66, 1)',
+          'rgba(0, 181, 81, 1)'
         ]
         heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
       }
