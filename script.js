@@ -45,10 +45,7 @@
         heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
       }
 
-      // Heatmap data: 500 Points
       function getPoints() {
-          
-        // return [
-        //   new google.maps.LatLng(37.782551, -122.445368)
-        // ];
+          let venues = [].concat(...venueData.response.groups.map(x => x.items)).map(x => x.venue);
+          return venues.map(venue => new google.maps.LatLng(venue.location.lat, venue.location.lng));
       }
