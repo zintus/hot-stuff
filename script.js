@@ -9,7 +9,8 @@
 
         heatmap = new google.maps.visualization.HeatmapLayer({
           data: getPoints(),
-          map: map
+          map: map,
+          maxIntensity: 10
         });
       }
 
@@ -47,5 +48,10 @@
 
       function getPoints() {
           let venues = [].concat(...venueData.response.groups.map(x => x.items)).map(x => x.venue);
-          return venues.map(venue => new google.maps.LatLng(venue.location.lat, venue.location.lng));
+          return venues.map(venue => { 
+               return { 
+                    location : new google.maps.LatLng(venue.location.lat, venue.location.lng),
+                    weight : venue.rating
+               };
+          });
       }
