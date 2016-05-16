@@ -1,54 +1,75 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Heatmaps</title>
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #map {
-        height: 100%;
-      }
-      #floating-panel {
-        position: absolute;
-        top: 10px;
-        left: 25%;
-        z-index: 5;
-        background-color: #fff;
-        padding: 5px;
-        border: 1px solid #999;
-        text-align: center;
-        font-family: 'Roboto','sans-serif';
-        line-height: 30px;
-        padding-left: 10px;
-      }
-      #floating-panel {
-        background-color: #fff;
-        border: 1px solid #999;
-        left: 25%;
-        padding: 5px;
-        position: absolute;
-        top: 10px;
-        z-index: 5;
-      }
-    </style>
-  </head>
+<meta charset="utf-8">
+<canvas width="300" height="300" style="width:960px;height:960px;"></canvas>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="data.js"></script>
+<script src="colorbrewer.min.js"></script>
+<script>
 
-  <body>
-    <div id="floating-panel">
-      <button onclick="toggleHeatmap()">Toggle Heatmap</button>
-      <button onclick="changeGradient()">Change gradient</button>
-      <button onclick="changeRadius()">Change radius</button>
-      <button onclick="changeOpacity()">Change opacity</button>
-    </div>
-    <div id="map"></div>
-    <script src="data.js"> </script>
-    <script src="script.js"> </script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8iF043Z46TBuxdCyaR31580tFI61FmvM&libraries=visualization&callback=initMap">
-    </script>
-  </body>
-</html>
+var canvas = document.querySelector("canvas"),
+  width = canvas.width,
+  height = canvas.height,
+  context = canvas.getContext("2d"),
+  image = context.createImageData(width, height);
+
+  var colorScale = d3.scale.linear()
+    .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    .range(colorbrewer.RdYlGn[10]);
+
+  var venuesData = function() {
+    var data = venueData.response.groups.map(x => x.items);
+    var venues = [].concat(...data)
+      .map(x => x.venue);
+    return venues.map(venue => { 
+      return {
+        lat : venue.location.lat,
+        lon : venue.location.lng,
+        rating : venue.rating
+      };
+    });
+  }();
+
+  var border = 0.05;
+
+  var minLat = Math.min.apply(Math, venuesData.map(x => x.lat)) - border;
+  var minLon = Math.min.apply(Math, venuesData.map(x => x.lon)) - border;
+
+  var maxLat = Math.max.apply(Math, venuesData.map(x => x.lat)) + border;
+  var maxLon = Math.max.apply(Math, venuesData.map(x => x.lon)) + border;
+
+  var latRange = maxLat - minLat;
+  var lonRange = maxLon - minLon;
+
+  venuesData = venuesData.map(venue => {
+    return {
+        lat : ((venue.lat - minLat) / latRange) * height,
+        lon : ((venue.lon - minLon) / lonRange) * width,
+        rating : venue.rating == undefined ? 0 : venue.rating
+    };
+  });
+
+  var fallOff = 20;
+
+  var j = -1;
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+      var rating = 0;
+      venuesData.forEach(venue => {
+        var distance = Math.sqrt(Math.pow(venue.lon - x, 2) + Math.pow(venue.lat - y, 2));
+        var scaledDistance = 1 - Math.min(1, distance / fallOff);
+        rating += (10 - rating) * ((10 - venue.rating) / 2.5) * scaledDistance;
+      });
+
+      rating = Math.max(0, Math.min(10, rating));
+
+      var venueColor = d3.rgb(colorScale(rating));
+
+      image.data[++j] = venueColor.r;
+      image.data[++j] = venueColor.g;
+      image.data[++j] = venueColor.b;
+      image.data[++j] = 255;
+    }
+  }
+
+  context.putImageData(image, 0, 0);
+</script>
